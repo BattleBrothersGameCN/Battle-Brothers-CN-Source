@@ -31,7 +31,7 @@ def main(project_path: Path):
     manifest_data = MANIFEST_PATH.read_text()
     manifest = parse_obj_as(Manifest, json.loads(manifest_data))
     for job in manifest.jobs:
-        core(project_path / job.input_path, SOURCE_PATH / job.output_path)
+        core(SOURCE_PATH / job.input_path, project_path / job.output_path)
 
 
 if __name__ == "__main__":
