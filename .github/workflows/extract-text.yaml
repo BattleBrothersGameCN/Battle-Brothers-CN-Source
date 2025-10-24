@@ -1,0 +1,45 @@
+# Action name
+name: Extra Text From Source
+
+on:
+  # schedule:
+  # 每天4点(UTC时间)执行 1 次
+  # - cron: "0 0 * * *"
+  workflow_dispatch:
+    # inputs:
+
+jobs:
+  extract-text:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/battlebrothersgamecn/bb-text-extractor
+      credentials:
+         username: oauth2
+         password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+    - name: Checkout Battle-Brothers-CN Project
+      uses: actions/checkout@v3
+      with:
+        repository: shabbywu/Battle-Brothers-CN
+        path: 'Battle-Brothers-CN'
+    - name: Checkout cn-scripts
+      uses: actions/checkout@v3
+      with:
+        path: 'Source'
+    - name: Perform Extraction
+      shell: bash
+      run: |
+        # Whatever commands you want to run here using the container with your
+        # new Docker image at ghcr.io!
+        ls -lah
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ github.token }}
+        commit-message: 'extract text from scripts'
+        title: 'Auto Text Extraction'
+        body: 'This is an automated PR'
+        branch: 'auto-extraction'
+        base: 'main'
+        assignees: 'shabbywu'
