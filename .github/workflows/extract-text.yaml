@@ -34,7 +34,7 @@ jobs:
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v6
       with:
-        token: ${{ github.token }}
+        token: ${{ secrets.PRIVATE_TOKEN }}
         commit-message: 'extract text from scripts'
         title: 'Auto Text Extraction'
         body: 'This is an automated PR'
