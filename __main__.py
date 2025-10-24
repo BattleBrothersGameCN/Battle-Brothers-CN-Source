@@ -22,7 +22,7 @@ class ProcessingJob(BaseModel):
 
 
 class Manifest(BaseModel):
-    jobs: List[Manifest] = Field(default_faculty=list)
+    jobs: List[ProcessingJob] = Field(default_faculty=list)
 
 
 
