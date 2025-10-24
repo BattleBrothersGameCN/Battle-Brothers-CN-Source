@@ -31,7 +31,7 @@ jobs:
       run: |
         # Whatever commands you want to run here using the container with your
         # new Docker image at ghcr.io!
-        ls -lah
+        python -m Source
 
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v6
@@ -43,3 +43,4 @@ jobs:
         branch: 'auto-extraction'
         base: 'main'
         assignees: 'shabbywu'
+        path: 'Battle-Brothers-CN'
