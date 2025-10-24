@@ -29,7 +29,7 @@ jobs:
     - name: Perform Extraction
       shell: bash
       run: |
-        python -m Source
+        python -m Source `pwd`/Battle-Brothers-CN
 
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v6
