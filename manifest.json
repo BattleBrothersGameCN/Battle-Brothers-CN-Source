@@ -9,7 +9,7 @@
             "project_id": "7032"
         },
         {
-            "input_path": "data",
+            "input_path": "reforged",
             "output_path": "zh_CN.UTF-8/mod_reforged/json",
             "name": "重铸",
             "description": "重铸",
