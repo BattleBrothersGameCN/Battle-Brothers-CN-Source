@@ -32,6 +32,7 @@ def main(project_path: Path):
     manifest = parse_obj_as(Manifest, json.loads(manifest_data))
     for job in manifest.jobs:
         core(SOURCE_PATH / job.input_path, project_path / job.output_path)
+        (project_path / job.output_path / "job.json").write_text(job.model_dump_json(ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

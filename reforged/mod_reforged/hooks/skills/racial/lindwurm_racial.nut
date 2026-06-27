@@ -1,0 +1,68 @@
+::Reforged.HooksMod.hook("scripts/skills/racial/lindwurm_racial", function(q) {
+	q.create = @(__original) { function create()
+	{
+		__original();
+		this.m.Name = "Lindwurm";
+		this.m.Description = "";	// Vanilla has "TODO" written here. We don't want that to display
+		this.m.Icon = "ui/orientation/lindwurm_orientation.png";
+		this.m.IsHidden = false;
+		this.addType(::Const.SkillType.StatusEffect);	// We now want this effect to show up on the enemies
+		if (this.isType(::Const.SkillType.Perk))
+			this.removeType(::Const.SkillType.Perk);	// This effect having the type 'Perk' serves no purpose and only causes issues in modding
+	}}.create;
+
+	q.getTooltip = @() { function getTooltip()
+	{
+		local ret = this.skill.getTooltip();
+		ret.extend([
+			{
+				id = 10,
+				type = "text",
+				icon = "ui/icons/special.png",
+				text = ::Reforged.Mod.Tooltips.parseString("Upon receiving a hit from an adjacent enemy that deals at least " + ::MSU.Text.colorPositive("11") + " damage to [Hitpoints|Concept.Hitpoints], apply [$ $|Skill+lindwurm_acid_effect] to them")
+			},
+			{
+				id = 20,
+				type = "text",
+				icon = "ui/icons/special.png",
+				text = ::Reforged.Mod.Tooltips.parseString("Not affected by [$ $|Skill+night_effect]")
+			},
+			{
+				id = 24,
+				type = "text",
+				icon = "ui/icons/special.png",
+				text = "Immune to being knocked back or grabbed"
+			},
+			{
+				id = 26,
+				type = "text",
+				icon = "ui/icons/special.png",
+				text = ::Reforged.Mod.Tooltips.parseString("Immune to being [$ $|Skill+disarmed_effect]")
+			},
+			{
+				id = 27,
+				type = "text",
+				icon = "ui/icons/special.png",
+				text = ::Reforged.Mod.Tooltips.parseString("Immune to being [rooted|Concept.Rooted]")
+			}
+			{
+				id = 28,
+				type = "text",
+				icon = "ui/icons/special.png",
+				text = ::Reforged.Mod.Tooltips.parseString("Immune to being [$ $|Skill+stunned_effect]")
+			}
+		]);
+		return ret;
+	}}.getTooltip;
+
+	q.onAdded = @() { function onAdded()
+	{
+		local baseProperties = this.getContainer().getActor().getBaseProperties();
+
+		baseProperties.IsAffectedByNight = false;
+		baseProperties.IsImmuneToDisarm = true;
+		baseProperties.IsImmuneToKnockBackAndGrab = true;
+		baseProperties.IsImmuneToStun = true;
+		baseProperties.IsImmuneToRoot = true;
+	}}.onAdded;
+});

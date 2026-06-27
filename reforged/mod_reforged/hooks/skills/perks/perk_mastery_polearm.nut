@@ -1,0 +1,32 @@
+::Reforged.HooksMod.hook("scripts/skills/perks/perk_mastery_polearm", function(q) {
+	q.onAdded = @(__original) { function onAdded()
+	{
+		__original();
+		this.getContainer().add(::Reforged.new("scripts/skills/perks/perk_rf_bolster", function(o) {
+			o.m.IsRefundable = false;
+			o.m.IsSerialized = false;
+		}));
+	}}.onAdded;
+
+	q.onRemoved = @(__original) { function onRemoved()
+	{
+		__original();
+		this.getContainer().removeByID("perk.rf_bolster");
+	}}.onRemoved;
+
+	q.onAfterUpdate = @(__original) { function onAfterUpdate( _properties )
+	{
+		__original(_properties);
+		local weapon = this.getContainer().getActor().getMainhandItem();
+		if (weapon != null && weapon.isItemType(::Const.Items.ItemType.TwoHanded) && weapon.isItemType(::Const.Items.ItemType.MeleeWeapon))
+		{
+			foreach (skill in weapon.getSkills())
+			{
+				if (skill.getMaxRange() == 2 && skill.getBaseValue("ActionPointCost") > 5 && skill.m.ActionPointCost > 1)
+				{
+					skill.m.ActionPointCost -= 1;
+				}
+			}
+		}
+	}}.onAfterUpdate;
+});

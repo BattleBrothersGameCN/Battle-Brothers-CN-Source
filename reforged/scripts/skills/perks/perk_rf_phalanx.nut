@@ -1,0 +1,166 @@
+this.perk_rf_phalanx <- ::inherit("scripts/skills/skill", {
+	m = {
+		RequiredDamageType = ::Const.Damage.DamageType.Piercing,
+		ShieldIgnoresDamageTypeRequirement = true,
+
+		__IsIgnoringSelfDamageTypeRequirement = false
+	},
+	function create()
+	{
+		this.m.ID = "perk.rf_phalanx";
+		this.m.Name = ::Const.Strings.PerkName.RF_Phalanx;
+		this.m.Description = "This character is highly skilled in fighting in formation.";
+		this.m.Icon = "ui/perks/perk_rf_phalanx.png";
+		this.m.Type = ::Const.SkillType.Perk | ::Const.SkillType.StatusEffect;
+		this.m.Order = ::Const.SkillOrder.Perk;
+	}
+
+	function softReset()
+	{
+		this.skill.softReset();
+		this.resetField("RequiredDamageType");
+	}
+
+	function isHidden()
+	{
+		return !this.isEnabled() || (this.getReachModifier() == 0 && this.getStartSurroundCountAtModifier() == 0);
+	}
+
+	function getTooltip()
+	{
+		local ret = this.skill.getTooltip();
+
+		local reachModifier = this.getReachModifier();
+		if (reachModifier != 0)
+		{
+			local requiredDamageType = this.m.__IsIgnoringSelfDamageTypeRequirement ? null : this.m.RequiredDamageType;
+			local damageTypeString = requiredDamageType == null ? "attacking" : "attacking with a " + ::Const.Damage.getDamageTypeName(requiredDamageType).tolower() + " attack";
+			ret.push({
+				id = 10,
+				type = "text",
+				icon = "ui/icons/rf_reach.png",
+				text = ::Reforged.Mod.Tooltips.parseString(::MSU.Text.colorizeValue(reachModifier, {AddSign = true}) + " [Reach|Concept.Reach] when defending or " + damageTypeString)
+			});
+		}
+
+		local surroundModifier = this.getStartSurroundCountAtModifier();
+		if (surroundModifier != 0)
+		{
+			ret.push({
+				id = 11,
+				type = "text",
+				icon = "ui/icons/melee_defense.png",
+				text = ::Reforged.Mod.Tooltips.parseString("Ignore the defense malus from being [surrounded|Concept.Surrounding] by up to " + ::MSU.Text.colorizeValue(surroundModifier) + " opponents")
+			});
+		}
+
+		return ret;
+	}
+
+	function onAnySkillUsed( _skill, _targetEntity, _properties )
+	{
+		if (!_skill.isAttack() || _skill.isRanged() || !this.isEnabled())
+			return;
+
+		local requiredDamageType = this.m.__IsIgnoringSelfDamageTypeRequirement ? null : this.m.RequiredDamageType;
+		if (requiredDamageType != null && !_skill.getDamageType().contains(this.m.RequiredDamageType))
+			return;
+
+		_properties.Reach += this.getReachModifier();
+	}
+
+	function onBeingAttacked( _attacker, _skill, _properties )
+	{
+		if (_skill.isAttack() && !_skill.isRanged() && this.isEnabled())
+		{
+			_properties.Reach += this.getReachModifier();
+		}
+	}
+
+	function onUpdate( _properties )
+	{
+		this.m.__IsIgnoringSelfDamageTypeRequirement = this.getContainer().getActor().isArmedWithShield() && this.m.ShieldIgnoresDamageTypeRequirement;
+
+		if (this.isEnabled())
+		{
+			_properties.StartSurroundCountAt += this.getStartSurroundCountAtModifier();
+		}
+	}
+
+	function getReachModifier()
+	{
+		return this.getAllyCount();
+	}
+
+	function getStartSurroundCountAtModifier()
+	{
+		return this.getAllyCount();
+	}
+
+	function getAllyCount()
+	{
+		local actor = this.getContainer().getActor();
+		if (!actor.isPlacedOnMap())
+		{
+			return 0;
+		}
+
+		local ret = 0;
+
+		foreach (ally in ::Tactical.Entities.getAlliedActors(actor.getFaction(), actor.getTile(), 1, true))
+		{
+			if (this.isActorValid(ally))
+			{
+				ret += 1;
+			}
+		}
+
+		return ret;
+	}
+
+	function isActorValid( _actor )
+	{
+		local weapon = _actor.getMainhandItem();
+		if (weapon == null)
+			return false;
+
+		if (weapon.isItemType(::Const.Items.ItemType.OneHanded))
+		{
+			local shield = _actor.getOffhandItem();
+			if (shield == null || !shield.isItemType(::Const.Items.ItemType.Shield) || !this.isShieldValid(shield))
+				return false;
+
+			if (this.m.ShieldIgnoresDamageTypeRequirement)
+				return true;
+		}
+
+		local requiredDamageType = this.m.RequiredDamageType;
+		if (::MSU.isEqual(_actor, this.getContainer().getActor()) && this.m.__IsIgnoringSelfDamageTypeRequirement)
+		{
+			requiredDamageType = null;
+		}
+
+		foreach (skill in weapon.getSkills())
+		{
+			if (!skill.isAttack() || skill.isRanged())
+				continue;
+
+			if (requiredDamageType == null || skill.getDamageType().contains(requiredDamageType))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	function isEnabled()
+	{
+		return this.isActorValid(this.getContainer().getActor());
+	}
+
+	function isShieldValid( _shield )
+	{
+		return _shield.getID().find("buckler") == null;
+	}
+});

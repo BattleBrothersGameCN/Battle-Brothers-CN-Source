@@ -1,0 +1,33 @@
+::Reforged.HooksMod.hook("scripts/skills/effects/possessing_undead_effect", function(q) {
+	q.create = @(__original) { function create()
+	{
+		__original();
+		// Vanilla is missing a description for this skill
+		this.m.Description = "This character has mysteriously taken direct control of a wiederganger.";
+	}}.create;
+
+	// Vanilla doesn't have a getTooltip function defined for this skill
+	q.getTooltip = @() { function getTooltip()
+	{
+		local ret = this.skill.getTooltip();
+
+		if (!::MSU.isNull(this.m.Possessed) && this.m.Possessed.isAlive())
+		{
+			ret.push({
+				id = 10,
+				type = "text",
+				icon = ::Reforged.Mod.Tooltips.parseString(::Reforged.NestedTooltips.getNestedEntityImage(this.m.Possessed)),
+				text = "Possessing " + ::Reforged.Mod.Tooltips.parseString(::Reforged.NestedTooltips.getNestedEntityName(this.m.Possessed)),
+			});
+		}
+
+		ret.push({
+			id = 11,
+			type = "text",
+			icon = "ui/icons/warning.png",
+			text = ::Reforged.Mod.Tooltips.parseString("Will be lost upon receiving " + ::MSU.Text.colorDamage(::Const.Combat.InjuryMinDamage) + " damage to [Hitpoints|Concept.Hitpoints] or if the possessed character dies")
+		});
+
+		return ret;
+	}}.getTooltip;
+});

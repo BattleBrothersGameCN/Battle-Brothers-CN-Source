@@ -1,2 +1,12 @@
-!*.cnut
+# Ignore everything by default
 *
+
+# Allow Git to traverse into directories so unignore patterns can match files
+!*/
+
+# Allow files with .cnut and .nut extensions anywhere in the tree
+!**/*.cnut
+!**/*.nut
+
+# Keep this .gitignore tracked
+!.gitignore

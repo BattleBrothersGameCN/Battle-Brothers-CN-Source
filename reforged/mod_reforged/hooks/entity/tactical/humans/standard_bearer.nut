@@ -1,0 +1,106 @@
+::Reforged.HooksMod.hook("scripts/entity/tactical/humans/standard_bearer", function(q) {
+	q.m.SurcoatChance <- 100;	// Chance for this character to spawn with a cosmetic tabard of its faction
+
+	q.onInit = @() { function onInit()
+	{
+		this.human.onInit();
+		local b = this.m.BaseProperties;
+		b.setValues(::Const.Tactical.Actor.StandardBearer);
+		b.TargetAttractionMult = 1.5;
+		this.m.ActionPoints = b.ActionPoints;
+		this.m.Hitpoints = b.Hitpoints;
+		this.m.CurrentProperties = clone b;
+		this.setAppearance();
+		this.getSprite("socket").setBrush("bust_base_military");
+
+		this.m.Skills.add(::new("scripts/skills/perks/perk_inspiring_presence"));
+		this.m.Skills.add(::new("scripts/skills/perks/perk_rally_the_troops"));
+	}}.onInit;
+
+	q.assignRandomEquipment = @() { function assignRandomEquipment()
+	{
+		local banner = ::Tactical.State.isScenarioMode() ? this.getFaction() : ::World.FactionManager.getFaction(this.getFaction()).getBanner();
+		this.m.Surcoat = banner;
+		if (::Math.rand(1, 100) <= this.m.SurcoatChance)
+		{
+			this.getSprite("surcoat").setBrush("surcoat_" + (banner < 10 ? "0" + banner : banner));
+		}
+
+		if (this.m.Items.hasEmptySlot(::Const.ItemSlot.Mainhand))
+		{
+			local weapon = ::new("scripts/items/tools/faction_banner");
+			weapon.setVariant(banner);
+			this.m.Items.equip(weapon);
+		}
+
+		if (this.m.Items.hasEmptySlot(::Const.ItemSlot.Body))
+		{
+			local script = ::MSU.Class.WeightedContainer([
+				[1, "scripts/items/armor/mail_hauberk"],
+				[1, "scripts/items/armor/mail_shirt"],
+				[2, "scripts/items/armor/basic_mail_shirt"]
+			]).roll();
+
+			local armor = ::new(script);
+			if (script == "scripts/items/armor/mail_hauberk")
+				armor.setVariant(28);
+
+			this.m.Items.equip(armor);
+
+			if (::Math.rand(1, 100) <= ::Reforged.Config.ArmorAttachmentChance.Tier3)
+			{
+				local armorAttachment = ::Reforged.ItemTable.ArmorAttachmentNorthern.roll({
+					Apply = function ( _script, _weight )
+					{
+						local conditionModifier = ::ItemTables.ItemInfoByScript[_script].ConditionModifier;
+						if (conditionModifier > 30) return 0.0;
+						return _weight;
+					}
+				})
+
+				if (armorAttachment != null)
+					armor.setUpgrade(::new(armorAttachment));
+			}
+		}
+
+		if (this.m.Items.hasEmptySlot(::Const.ItemSlot.Head))
+		{
+			local helmet;
+			if (::Math.rand(1, 100) <= 75)
+			{
+				if (banner <= 4)
+				{
+					helmet = ::new(::MSU.Class.WeightedContainer([
+						[1, "scripts/items/helmets/kettle_hat"],
+						[1, "scripts/items/helmets/padded_kettle_hat"]
+					]).roll());
+				}
+				else if (banner <= 7)
+				{
+					helmet = ::new(::MSU.Class.WeightedContainer([
+						[1, "scripts/items/helmets/flat_top_helmet"],
+						[1, "scripts/items/helmets/padded_flat_top_helmet"]
+					]).roll());
+				}
+				else
+				{
+					helmet = ::new(::MSU.Class.WeightedContainer([
+						[1, "scripts/items/helmets/nasal_helmet"],
+						[1, "scripts/items/helmets/padded_nasal_helmet"]
+					]).roll());
+				}
+			}
+			else
+			{
+				helmet = ::new(::MSU.Class.WeightedContainer([
+					[1, "scripts/items/helmets/mail_coif"],
+					[1, "scripts/items/helmets/aketon_cap"],
+					[1, "scripts/items/helmets/full_aketon_cap"]
+				]).roll());
+			}
+
+			helmet.setPlainVariant();
+			this.m.Items.equip(helmet);
+		}
+	}}.assignRandomEquipment;
+});
