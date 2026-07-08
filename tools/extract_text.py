@@ -1,9 +1,10 @@
+import argparse
 import json
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from bb_text_extractor import extractor
-from pydantic import BaseModel, Field, parse_obj_as
+from pydantic import BaseModel, Field
 
 
 SOURCE_PATH = Path(__file__).resolve().parents[1]
@@ -34,7 +35,7 @@ class Manifest(BaseModel):
 
 def load_manifest(path: Path = MANIFEST_PATH) -> Manifest:
     manifest_data = path.read_text(encoding="utf-8")
-    return parse_obj_as(Manifest, json.loads(manifest_data))
+    return Manifest(**json.loads(manifest_data))
 
 
 def build_localization_manifest(manifest: Manifest):
@@ -85,17 +86,40 @@ def write_localization_manifest(manifest: Manifest, project_path: Path):
     )
 
 
-def main(project_path: Path):
+def select_jobs(manifest: Manifest, job_id: Optional[str]) -> List[ProcessingJob]:
+    if not job_id or job_id == "all":
+        return manifest.jobs
+
+    jobs = [job for job in manifest.jobs if job.id == job_id]
+    if jobs:
+        return jobs
+
+    available_jobs = ", ".join(job.id for job in manifest.jobs)
+    raise ValueError(f"Unknown job id: {job_id}. Available jobs: {available_jobs}")
+
+
+def main(project_path: Path, job_id: Optional[str] = None):
     manifest = load_manifest()
-    for job in manifest.jobs:
+    for job in select_jobs(manifest, job_id):
         extract_job(job, project_path)
     write_localization_manifest(manifest, project_path)
 
 
 def main_from_argv(argv: List[str]):
-    if len(argv) != 2:
-        raise SystemExit(f"Usage: {Path(argv[0]).name} <Battle-Brothers-CN path>")
-    main(Path(argv[1]).resolve())
+    parser = argparse.ArgumentParser(description="Extract Battle Brothers localization text.")
+    parser.add_argument("project_path", type=Path, help="Battle-Brothers-CN repository path")
+    parser.add_argument(
+        "--job",
+        "--job-id",
+        dest="job_id",
+        default="all",
+        help="Only extract one manifest job id. Use 'all' or omit this option to extract every job.",
+    )
+    args = parser.parse_args(argv[1:])
+    try:
+        main(args.project_path.resolve(), args.job_id.strip())
+    except ValueError as exc:
+        parser.error(str(exc))
 
 
 if __name__ == "__main__":

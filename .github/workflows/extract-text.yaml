@@ -5,7 +5,11 @@ on:
   # 每天4点(UTC时间)执行 1 次
   # - cron: "0 0 * * *"
   workflow_dispatch:
-    # inputs:
+    inputs:
+      job_id:
+        description: "Manifest job id to extract. Use all for every job."
+        required: false
+        default: all
 
 jobs:
   extract-text:
@@ -31,10 +35,10 @@ jobs:
       - name: Perform extraction
         shell: bash
         run: |
-          python Source/tools/extract_text.py "$PWD/Battle-Brothers-CN"
+          python Source/tools/extract_text.py "$PWD/Battle-Brothers-CN" --job "${{ inputs.job_id }}"
 
       - name: Create Pull Request to shabbywu/Battle-Brothers-CN
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.PRIVATE_TOKEN }}
           commit-message: extract text from scripts

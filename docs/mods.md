@@ -42,6 +42,14 @@ git -C mods/reforged checkout <version>
 
 然后同步修改 `manifest.json` 中 `version`，执行一次文本提取，确认输出目录没有异常后再提交。
 
+本地只提取某一个 job 时传入 `--job`：
+
+```bash
+python tools/extract_text.py /path/to/Battle-Brothers-CN --job reforged
+```
+
+GitHub Actions 手动触发时可填写 `job_id`。默认值 `all` 会提取全部 jobs；填写 `base` 或 `reforged` 会只提取对应 job。
+
 Mod 翻译流程使用已支持 Mods 的 bb-translator 版本，例如 `v2.0.0` 或更新版本：
 
 https://github.com/shabbywu/bb-translator/releases/tag/v2.0.0

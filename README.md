@@ -89,6 +89,12 @@ git submodule update --init --recursive
 python tools/extract_text.py /path/to/Battle-Brothers-CN
 ```
 
+只提取某一个 `manifest.json` job：
+
+```bash
+python tools/extract_text.py /path/to/Battle-Brothers-CN --job reforged
+```
+
 如果本机使用已安装提取器的 pyenv shim，可执行：
 
 ```bash
