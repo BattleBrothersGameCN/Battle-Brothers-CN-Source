@@ -3,6 +3,7 @@ name: Extract Text From Source
 permissions:
   contents: write
   pull-requests: write
+  packages: read
 
 on:
   # schedule:
