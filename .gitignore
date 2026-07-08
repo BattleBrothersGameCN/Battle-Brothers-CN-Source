@@ -1,2 +1,28 @@
-!*.cnut
+# Ignore everything by default; this repository intentionally tracks only
+# extraction inputs, config, docs, and pinned mod references.
 *
+!*/
+
+!.gitignore
+!.gitmodules
+!LICENSE
+!README.md
+
+!.github/
+!.github/**
+
+!manifest.json
+!tools/
+!tools/*.py
+
+!data/
+!data/**
+!*.cnut
+
+!docs/
+!docs/**
+
+!mods/
+!mods/README.md
+!mods/reforged
+.DS_Store

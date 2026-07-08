@@ -1,5 +1,4 @@
-# Action name
-name: Extra Text From Source
+name: Extract Text From Source
 
 on:
   # schedule:
@@ -14,32 +13,39 @@ jobs:
     container:
       image: ghcr.io/battlebrothersgamecn/bb-text-extractor
       credentials:
-         username: oauth2
-         password: ${{ secrets.GITHUB_TOKEN }}
+        username: oauth2
+        password: ${{ secrets.GITHUB_TOKEN }}
     steps:
-    - name: Checkout Battle-Brothers-CN Project
-      uses: actions/checkout@v3
-      with:
-        repository: shabbywu/Battle-Brothers-CN
-        path: 'Battle-Brothers-CN'
-    - name: Checkout cn-scripts
-      uses: actions/checkout@v3
-      with:
-        path: 'Source'
-    - name: Perform Extraction
-      shell: bash
-      run: |
-        ls -lah
-        python -m Source `pwd`/Battle-Brothers-CN
+      - name: Checkout Battle-Brothers-CN Project
+        uses: actions/checkout@v4
+        with:
+          repository: shabbywu/Battle-Brothers-CN
+          path: Battle-Brothers-CN
 
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v6
-      with:
-        token: ${{ secrets.PRIVATE_TOKEN }}
-        commit-message: 'extract text from scripts'
-        title: 'Auto Text Extraction'
-        body: 'This is an automated PR'
-        branch: 'auto-extraction'
-        base: 'main'
-        assignees: 'shabbywu'
-        path: 'Battle-Brothers-CN'
+      - name: Checkout source inputs
+        uses: actions/checkout@v4
+        with:
+          path: Source
+          submodules: recursive
+
+      - name: Perform extraction
+        shell: bash
+        run: |
+          python Source/tools/extract_text.py "$PWD/Battle-Brothers-CN"
+
+      - name: Create Pull Request to shabbywu/Battle-Brothers-CN
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.PRIVATE_TOKEN }}
+          commit-message: extract text from scripts
+          title: Auto Text Extraction
+          body: |
+            This is an automated PR.
+
+            The extraction branch is pushed to BattleBrothersGameCN/Battle-Brothers-CN
+            and proposed for merge into shabbywu/Battle-Brothers-CN.
+          branch: auto-extraction
+          push-to-fork: BattleBrothersGameCN/Battle-Brothers-CN
+          base: main
+          assignees: shabbywu
+          path: Battle-Brothers-CN
