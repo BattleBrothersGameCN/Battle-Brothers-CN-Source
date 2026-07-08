@@ -1,5 +1,9 @@
 name: Extract Text From Source
 
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
   # schedule:
   # 每天4点(UTC时间)执行 1 次
@@ -40,7 +44,8 @@ jobs:
       - name: Create Pull Request to shabbywu/Battle-Brothers-CN
         uses: peter-evans/create-pull-request@v8
         with:
-          token: ${{ secrets.PRIVATE_TOKEN }}
+          token: ${{ secrets.MR_TOKEN }}
+          branch-token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: extract text from scripts
           title: Auto Text Extraction
           body: |
