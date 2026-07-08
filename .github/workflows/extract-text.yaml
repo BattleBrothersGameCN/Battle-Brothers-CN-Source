@@ -46,7 +46,7 @@ jobs:
         uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.MR_TOKEN }}
-          branch-token: ${{ secrets.GITHUB_TOKEN }}
+          branch-token: ${{ secrets.PUSH_TOKEN }}
           commit-message: extract text from scripts
           title: Auto Text Extraction
           body: |
