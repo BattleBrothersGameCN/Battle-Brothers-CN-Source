@@ -1,0 +1,3 @@
+[submodule "reforged"]
+	path = mods/reforged
+	url = https://github.com/Battle-Modders/mod-reforged.git
